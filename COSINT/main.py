@@ -191,13 +191,13 @@ class QueryMaker :
 
     # Main initiator for LinkedIn queries
     def linkedin_query(self, wordlist):
-        employees = self.linkedin_employee_query(wordlist.get("Employee"))
+        employees = self.linkedin_employee_query(wordlist.get("Employee"), wordlist.get("Company"))
         mails = self.linkedin_mail_query(wordlist.get("Mail"))
         company_info = self.linkedin_company_query(wordlist.get("Company"))
         return {"Employees" : employees, "Mails" : mails, "Company" : company_info}
 
     # Queries employees of a company from LinkedIn
-    def linkedin_employee_query(self, word):
+    def linkedin_employee_query(self, word, company_name):
         # Generating random user agents to avoid being detected as a bot
         user_agent = UserAgent()
         random_agent = user_agent.random
@@ -222,8 +222,6 @@ class QueryMaker :
         driver.get(url)
         sleep(2)
 
-        # Filters out all href links from the page that sent to us when we query
-
         filtered_links = []
         all_links_obj = []
 
@@ -231,6 +229,8 @@ class QueryMaker :
             if (i == 0) :
                 sleep(3)
                 all_links_obj = driver.find_elements(By.XPATH, "//a[@href]")
+
+                # There are so many unrelated links, so we need a regex that we can filter out what we want
                 regex_control = re.compile(r"^https:\/\/(www|[a-z]{2,3})\.linkedin\.com\/in")
                 for bing_link in all_links_obj:
                     try:
@@ -239,16 +239,18 @@ class QueryMaker :
                     except Exception as e:
                         print(e)
                         continue
-                    if (regex_control.search(href)) and (not "linkedin.com" in text):
+                    if (regex_control.search(href)) and (not "linkedin.com" in text) and (company_name.lower() in text.lower()):
                         filtered_links.append([text, href])
+
                 all_links_obj = []
+
                 wait.until(EC.visibility_of_element_located((By.XPATH, "//*[@id=\"bnp_btn_reject\"]")))
                 wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"bnp_btn_reject\"]")))
                 sleep(1)
                 driver.find_element(By.XPATH, "//*[@id=\"bnp_btn_reject\"]").click()
+
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
-                #wait.until(EC.visibility_of_element_located((By.XPATH, "//*[@id=\"b_results\"]/li[12]/nav/ul/li[5]/a")))
                 wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(5) > a")))
                 wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(5) > a")))
                 sleep(1)
@@ -256,6 +258,8 @@ class QueryMaker :
             else :
                 sleep(3)
                 all_links_obj = driver.find_elements(By.XPATH, "//a[@href]")
+
+                # There are so many unrelated links, so we need a regex that we can filter out what we want
                 regex_control = re.compile(r"^https:\/\/(www|[a-z]{2,3})\.linkedin\.com\/in")
                 for bing_link in all_links_obj:
                     try:
@@ -271,40 +275,39 @@ class QueryMaker :
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
                 try :
-                    #wait.until(EC.visibility_of_element_located((By.XPATH, "//*[@id=\"b_results\"]/li[11]/nav/ul/li[7]/a")))
                     wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(7) > a")))
-                    # b_results > li.b_pag > nav > ul > li:nth-child(7) > a
                     wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(7) > a")))
                     sleep(1)
                     driver.find_element(By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(7) > a").click()
                 except :
                     try :
-                        # wait.until(EC.visibility_of_element_located((By.XPATH, "//*[@id=\"b_results\"]/li[11]/nav/ul/li[7]/a")))
-                        wait.until(EC.visibility_of_element_located(
-                        (By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(8) > a")))
-                        # b_results > li.b_pag > nav > ul > li:nth-child(7) > a
-                        wait.until(EC.element_to_be_clickable(
-                        (By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(8) > a")))
+                        wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(8) > a")))
+                        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(8) > a")))
                         sleep(1)
-                        driver.find_element(By.CSS_SELECTOR,
-                                        "#b_results > li.b_pag > nav > ul > li:nth-child(8) > a").click()
+                        driver.find_element(By.CSS_SELECTOR,"#b_results > li.b_pag > nav > ul > li:nth-child(8) > a").click()
                     except Exception as e:
-                        # wait.until(EC.visibility_of_element_located((By.XPATH, "//*[@id=\"b_results\"]/li[11]/nav/ul/li[7]/a")))
-                        wait.until(EC.visibility_of_element_located(
-                            (By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(9) > a")))
-                        # b_results > li.b_pag > nav > ul > li:nth-child(7) > a
-                        wait.until(EC.element_to_be_clickable(
-                            (By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(9) > a")))
+                        wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(9) > a")))
+                        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(9) > a")))
                         sleep(1)
-                        driver.find_element(By.CSS_SELECTOR,
-                                            "#b_results > li.b_pag > nav > ul > li:nth-child(9) > a").click()
+                        driver.find_element(By.CSS_SELECTOR,"#b_results > li.b_pag > nav > ul > li:nth-child(9) > a").click()
 
 
-
-        # There are so many unrelated links, so we need a regex that we can
-        # filter out what we want
         for linkedin_link in filtered_links:
-            print(linkedin_link[0] + "  :  " + linkedin_link[1])
+            full_string = linkedin_link[0]
+            employee_name = full_string[0:full_string.index(" - ")]
+            temp = full_string[full_string.index(" - ")+3:]
+            try :
+                employee_role = temp[0:temp.index(" - ")]
+            except :
+                try :
+                    employee_role = temp[0:temp.index(" | ")]
+                except:
+                    employee_role = "Unknown"
+
+            if (employee_role == company_name) :
+                print(employee_name + "  :  " + "Unknown" + "   --->  " + linkedin_link[1])
+            else :
+                print(employee_name + "  :  " + employee_role + "   --->  " + linkedin_link[1])
 
         print("Total results : ", len(filtered_links))
 
