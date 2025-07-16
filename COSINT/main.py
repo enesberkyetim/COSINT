@@ -269,18 +269,44 @@ class QueryMaker :
                 all_links_obj = []
 
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                #wait.until(EC.visibility_of_element_located((By.XPATH, "//*[@id=\"b_results\"]/li[11]/nav/ul/li[7]/a")))
-                wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(7) > a")))
-                # b_results > li.b_pag > nav > ul > li:nth-child(7) > a
-                wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(7) > a")))
-                sleep(1)
-                driver.find_element(By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(7) > a").click()
+
+                try :
+                    #wait.until(EC.visibility_of_element_located((By.XPATH, "//*[@id=\"b_results\"]/li[11]/nav/ul/li[7]/a")))
+                    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(7) > a")))
+                    # b_results > li.b_pag > nav > ul > li:nth-child(7) > a
+                    wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(7) > a")))
+                    sleep(1)
+                    driver.find_element(By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(7) > a").click()
+                except :
+                    try :
+                        # wait.until(EC.visibility_of_element_located((By.XPATH, "//*[@id=\"b_results\"]/li[11]/nav/ul/li[7]/a")))
+                        wait.until(EC.visibility_of_element_located(
+                        (By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(8) > a")))
+                        # b_results > li.b_pag > nav > ul > li:nth-child(7) > a
+                        wait.until(EC.element_to_be_clickable(
+                        (By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(8) > a")))
+                        sleep(1)
+                        driver.find_element(By.CSS_SELECTOR,
+                                        "#b_results > li.b_pag > nav > ul > li:nth-child(8) > a").click()
+                    except Exception as e:
+                        # wait.until(EC.visibility_of_element_located((By.XPATH, "//*[@id=\"b_results\"]/li[11]/nav/ul/li[7]/a")))
+                        wait.until(EC.visibility_of_element_located(
+                            (By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(9) > a")))
+                        # b_results > li.b_pag > nav > ul > li:nth-child(7) > a
+                        wait.until(EC.element_to_be_clickable(
+                            (By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(9) > a")))
+                        sleep(1)
+                        driver.find_element(By.CSS_SELECTOR,
+                                            "#b_results > li.b_pag > nav > ul > li:nth-child(9) > a").click()
+
 
 
         # There are so many unrelated links, so we need a regex that we can
         # filter out what we want
         for linkedin_link in filtered_links:
             print(linkedin_link[0] + "  :  " + linkedin_link[1])
+
+        print("Total results : ", len(filtered_links))
 
         driver.quit()
     def linkedin_company_query(self, wordlist):
