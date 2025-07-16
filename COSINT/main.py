@@ -163,7 +163,46 @@ class CLI :
     # Initiating the functions related to LinkedIn scraping
     def print_linkedin(self):
         linkedin_wordlist = self.dorker.wrap_linkedin(args.company, args.domain)
-        self.query_maker.linkedin_query(linkedin_wordlist)
+        employee_filtered_links = self.query_maker.linkedin_query(linkedin_wordlist).get("Employees")
+        company_name = linkedin_wordlist.get("Company")
+
+        temp1 = "Employee Name and Role"
+        temp2 = "Link"
+        print(f"{temp1:^80}", end='')
+        print("|  ", end='')
+        print(f"{temp2:^88}", end='')
+        print("|")
+        print("-" * 172)
+
+        for linkedin_link in employee_filtered_links:
+            full_string = linkedin_link[0]
+            employee_name = full_string[0:full_string.index(" - ")]
+            temp = full_string[full_string.index(" - ")+3:]
+            try :
+                employee_role = temp[0:temp.index(" - ")]
+            except :
+                try :
+                    employee_role = temp[0:temp.index(" | ")]
+                except:
+                    employee_role = "Unknown"
+
+            if (employee_role == company_name) :
+                temp1 = "Unknown"
+            else :
+                temp1 = employee_role
+
+            temp2 = linkedin_link[1]
+            if (len(employee_name) >= 33) :
+                employee_name = employee_name[:33]
+            if (len(temp1) >= 43) :
+                temp1 = employee_role[:43]
+            print(f"{employee_name:<34}", end='')
+            print("| ", end='')
+            print(f"{temp1:<44}", end='')
+            print("|", end='')
+            print(f"{temp2:^90}", end='')
+            print("|")
+        print("Total results : ", len(employee_filtered_links))
 
 # Generates the strings to be used for query in search engines
 class Dorker :
@@ -291,27 +330,9 @@ class QueryMaker :
                         sleep(1)
                         driver.find_element(By.CSS_SELECTOR,"#b_results > li.b_pag > nav > ul > li:nth-child(9) > a").click()
 
-
-        for linkedin_link in filtered_links:
-            full_string = linkedin_link[0]
-            employee_name = full_string[0:full_string.index(" - ")]
-            temp = full_string[full_string.index(" - ")+3:]
-            try :
-                employee_role = temp[0:temp.index(" - ")]
-            except :
-                try :
-                    employee_role = temp[0:temp.index(" | ")]
-                except:
-                    employee_role = "Unknown"
-
-            if (employee_role == company_name) :
-                print(employee_name + "  :  " + "Unknown" + "   --->  " + linkedin_link[1])
-            else :
-                print(employee_name + "  :  " + employee_role + "   --->  " + linkedin_link[1])
-
-        print("Total results : ", len(filtered_links))
-
         driver.quit()
+        return filtered_links
+
     def linkedin_company_query(self, wordlist):
         print()
     def linkedin_mail_query(self, wordlist):
