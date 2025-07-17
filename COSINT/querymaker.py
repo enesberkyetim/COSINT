@@ -10,10 +10,10 @@ import re
 
 # Makes search engine queries with chromedriver and Selenium, also returns results
 class QueryMaker :
-    def __init__(self, chromedriver_path, max_page_num):
+    def __init__(self, chromedriver_path, max_page_num, headless):
         self.chromedriver_path = chromedriver_path
         self.max_page_num = max_page_num
-
+        self.headless = headless
     # Main initiator for LinkedIn queries
     def linkedin_query(self, wordlist):
         employees = self.linkedin_employee_query(wordlist.get("Employee"), wordlist.get("Company"))
@@ -30,7 +30,8 @@ class QueryMaker :
         options = Options()
         options.add_argument(request_header)
         options.add_argument("--disable-gpu")
-        #options.add_argument("--headless")
+        if (self.headless) :
+            options.add_argument("--headless")
         options.page_load_strategy = "eager"
 
         service = Service(self.chromedriver_path)

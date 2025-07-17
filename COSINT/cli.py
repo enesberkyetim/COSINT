@@ -18,7 +18,7 @@ class CLI :
         self.greet()
         self.dorker = Dorker()
         self.chromedriver_def_path = self.get_chromedriver()
-        self.query_maker = QueryMaker(self.chromedriver_def_path, args.pagenumber)
+        self.query_maker = QueryMaker(self.chromedriver_def_path, self.args.pagenumber, self.args.headless)
         self.print_linkedin()
 
     # Downloads chromedriver's latest release from the internet according to the host OS
