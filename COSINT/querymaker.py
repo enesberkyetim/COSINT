@@ -30,14 +30,17 @@ class QueryMaker :
         options = Options()
         options.add_argument(request_header)
         options.add_argument("--disable-gpu")
-        if (self.headless) :
-            options.add_argument("--headless")
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_argument("--window-size=1920,1080")
+        if (self.headless == True) :
+            options.add_argument("--headless=new")
         options.page_load_strategy = "eager"
 
         service = Service(self.chromedriver_path)
 
         driver = webdriver.Chrome(service=service, options=options)
         driver.set_page_load_timeout(15)
+        driver.maximize_window()
         wait = WebDriverWait(driver, 20)
 
 
@@ -68,14 +71,18 @@ class QueryMaker :
 
                 all_links_obj = []
 
-                wait.until(EC.visibility_of_element_located((By.XPATH, "//*[@id=\"bnp_btn_reject\"]")))
-                wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"bnp_btn_reject\"]")))
-                sleep(1)
-                driver.find_element(By.XPATH, "//*[@id=\"bnp_btn_reject\"]").click()
+                if (self.headless == False) :
+                    try :
+                        wait.until(EC.presence_of_element_located((By.XPATH, "//*[@id=\"bnp_btn_reject\"]")))
+                        wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"bnp_btn_reject\"]")))
+                        sleep(1)
+                        driver.find_element(By.XPATH, "//*[@id=\"bnp_btn_reject\"]").click()
+                    except :
+                        pass
 
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
-                wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(5) > a")))
+                wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(5) > a")))
                 wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(5) > a")))
                 sleep(1)
                 driver.find_element(By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(5) > a").click()
@@ -99,18 +106,18 @@ class QueryMaker :
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
                 try :
-                    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(7) > a")))
+                    wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(7) > a")))
                     wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(7) > a")))
                     sleep(1)
                     driver.find_element(By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(7) > a").click()
                 except :
                     try :
-                        wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(8) > a")))
+                        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(8) > a")))
                         wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(8) > a")))
                         sleep(1)
                         driver.find_element(By.CSS_SELECTOR,"#b_results > li.b_pag > nav > ul > li:nth-child(8) > a").click()
                     except Exception as e:
-                        wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(9) > a")))
+                        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(9) > a")))
                         wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(9) > a")))
                         sleep(1)
                         driver.find_element(By.CSS_SELECTOR,"#b_results > li.b_pag > nav > ul > li:nth-child(9) > a").click()
