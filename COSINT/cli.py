@@ -15,6 +15,7 @@ from querymaker import QueryMaker
 class CLI :
     def __init__(self, args):
         self.args = args
+        self.linkedin_results
         self.greet()
         self.dorker = Dorker()
         self.chromedriver_def_path = self.get_chromedriver()
@@ -51,7 +52,7 @@ class CLI :
                     for chunk in response.iter_content(chunk_size=8192):
                         file.write(chunk)
             else:
-                print("ah")
+                print("ChromeDriver download failed")
                 raise SystemExit(1)
 
             # Extracting the zip file
@@ -157,9 +158,12 @@ class CLI :
         print()
 
     # Initiating the functions related to LinkedIn scraping
+    def save_linkedin(self, list):
+        self.linkedin_results = list
     def print_linkedin(self):
         linkedin_wordlist = self.dorker.wrap_linkedin(self.args.company, self.args.domain)
         employee_filtered_links = self.query_maker.linkedin_query(linkedin_wordlist).get("Employees")
+        self.save_linkedin(employee_filtered_links)
         company_name = linkedin_wordlist.get("Company")
 
         temp1 = "Employee Name and Role"

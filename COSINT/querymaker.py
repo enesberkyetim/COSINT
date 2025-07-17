@@ -130,5 +130,4 @@ class QueryMaker :
         return {"E-mails": emails}
 
     def github_mail_query(self, domain, company_name):
-
         pass
