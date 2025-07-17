@@ -116,7 +116,7 @@ class QueryMaker :
                         wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(8) > a")))
                         sleep(1)
                         driver.find_element(By.CSS_SELECTOR,"#b_results > li.b_pag > nav > ul > li:nth-child(8) > a").click()
-                    except Exception as e:
+                    except:
                         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(9) > a")))
                         wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#b_results > li.b_pag > nav > ul > li:nth-child(9) > a")))
                         sleep(1)
