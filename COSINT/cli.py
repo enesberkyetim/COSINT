@@ -6,6 +6,10 @@ import requests
 import argparse
 import platform
 from time import sleep
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import WebDriverException
 
 from dorker import Dorker
 from querymaker import QueryMaker
@@ -15,7 +19,8 @@ from querymaker import QueryMaker
 class CLI :
     def __init__(self, args):
         self.args = args
-        self.linkedin_results
+        self.linkedin_results = None
+        self.mail_results = None
         self.greet()
         self.dorker = Dorker()
         self.chromedriver_def_path = self.get_chromedriver()
@@ -28,111 +33,129 @@ class CLI :
         If I use general path convention, it won't work when we extract this project
         to an executable file. So I decide the path to main.py like this
         """
+
         if getattr(sys, 'frozen', False):
             chromedriver_def_path = os.path.join(sys._MEIPASS)
-        else:
+        else :
             chromedriver_def_path = os.path.join(os.path.dirname(os.path.abspath(__file__)))
 
-        # Checking and getting the latest version number
-        version_url = "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_STABLE"
-        version = requests.get(version_url).text
+        try:
+            if (platform.system() == "Windows") :
+                options = Options()
+                service = Service(chromedriver_def_path + "/chromedriver.exe")
+                options.add_argument("--headless")
+                driver = webdriver.Chrome(service=service, options=options)
+                driver.get("https://www.bing.com/")
+                return chromedriver_def_path + "/chromedriver.exe"
+            elif (platform.system() == "Linux") :
+                options = Options()
+                service = Service(chromedriver_def_path + "/chromedriver")
+                options.add_argument("--headless")
+                driver = webdriver.Chrome(service=service, options=options)
+                driver.get("https://www.bing.com/")
+                return chromedriver_def_path + "/chromedriver"
+        except WebDriverException as e:
+            # Checking and getting the latest version number
+            version_url = "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_STABLE"
+            version = requests.get(version_url).text
 
-        # Paths and executable names differ from OS to OS. So I branched them
-        if (platform.system() == "Windows"):
-            # chromedriver's download links are following a general pattern
-            url = "https://storage.googleapis.com/chrome-for-testing-public/" + version + "/win64/chromedriver-win64.zip"
-            zip_name = "chromedriver-win64.zip"
+            # Paths and executable names differ from OS to OS. So I branched them
+            if (platform.system() == "Windows"):
+                # chromedriver's download links are following a general pattern
+                url = "https://storage.googleapis.com/chrome-for-testing-public/" + version + "/win64/chromedriver-win64.zip"
+                zip_name = "chromedriver-win64.zip"
 
-            zip_file_path = os.path.join(chromedriver_def_path, zip_name)
+                zip_file_path = os.path.join(chromedriver_def_path, zip_name)
 
-            # Downloading the latest chromedriver zip file
-            response = requests.get(url, stream=True)
-            if response.status_code == 200:
-                with open(zip_file_path, "wb") as file:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        file.write(chunk)
-            else:
-                print("ChromeDriver download failed")
-                raise SystemExit(1)
+                # Downloading the latest chromedriver zip file
+                response = requests.get(url, stream=True)
+                if response.status_code == 200:
+                    with open(zip_file_path, "wb") as file:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            file.write(chunk)
+                else:
+                    print("ChromeDriver download failed")
+                    raise SystemExit(1)
 
-            # Extracting the zip file
-            try:
-                with ZipFile(zip_file_path, 'r') as zip_ref:
-                    zip_ref.extractall(chromedriver_def_path)
+                # Extracting the zip file
+                try:
+                    with ZipFile(zip_file_path, 'r') as zip_ref:
+                        zip_ref.extractall(chromedriver_def_path)
 
-            except Exception as e:
-                print(e)
-                raise SystemExit(1)
+                except Exception as e:
+                    print(e)
+                    raise SystemExit(1)
 
-            # Removing the zip file because it's extracted already
-            if os.path.exists(zip_file_path):
-                os.remove(zip_file_path)
+                # Removing the zip file because it's extracted already
+                if os.path.exists(zip_file_path):
+                    os.remove(zip_file_path)
 
-            exact_path = os.path.join(chromedriver_def_path, "chromedriver-win64/chromedriver.exe")
+                exact_path = os.path.join(chromedriver_def_path, "chromedriver-win64/chromedriver.exe")
 
-            # We need only the chromedriver from the extracted folder so we copy it outside the folder
-            try:
-                shutil.copy(exact_path, chromedriver_def_path)
-            except Exception as e:
-                print(e)
-                raise SystemExit(1)
+                # We need only the chromedriver from the extracted folder so we copy it outside the folder
+                try:
+                    shutil.copy(exact_path, chromedriver_def_path)
+                except Exception as e:
+                    print(e)
+                    raise SystemExit(1)
 
-            exact_path = os.path.join(chromedriver_def_path, "chromedriver-win64")
+                exact_path = os.path.join(chromedriver_def_path, "chromedriver-win64")
 
-            # Removing the extracted folder recursively
-            try:
-                shutil.rmtree(exact_path)
-            except Exception as e:
-                print(e)
-                raise SystemExit(1)
+                # Removing the extracted folder recursively
+                try:
+                    shutil.rmtree(exact_path)
+                except Exception as e:
+                    print(e)
+                    raise SystemExit(1)
 
-            return chromedriver_def_path + "/chromedriver.exe"
+                return chromedriver_def_path + "/chromedriver.exe"
 
-        # Similar things goes on Linux part
-        elif (platform.system() == "Linux") :
-            url = "https://storage.googleapis.com/chrome-for-testing-public/" + version + "/linux64/chromedriver-linux64.zip"
-            zip_name = "chromedriver-linux64.zip"
-            exact_path = os.path.join(chromedriver_def_path, "chromedriver-linux64/chromedriver") # bak
+            # Similar things goes on Linux part
+            elif (platform.system() == "Linux"):
+                url = "https://storage.googleapis.com/chrome-for-testing-public/" + version + "/linux64/chromedriver-linux64.zip"
+                zip_name = "chromedriver-linux64.zip"
+                exact_path = os.path.join(chromedriver_def_path, "chromedriver-linux64/chromedriver")  # bak
 
-            zip_file_path = os.path.join(chromedriver_def_path, zip_name)
+                zip_file_path = os.path.join(chromedriver_def_path, zip_name)
 
-            response = requests.get(url, stream=True)
-            if response.status_code == 200:
-                with open(zip_file_path, "wb") as file:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        file.write(chunk)
-            else:
-                raise SystemExit(1)
+                response = requests.get(url, stream=True)
+                if response.status_code == 200:
+                    with open(zip_file_path, "wb") as file:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            file.write(chunk)
+                else:
+                    raise SystemExit(1)
 
-            try:
-                with ZipFile(zip_file_path, 'r') as zip_ref:
-                    zip_ref.extractall(chromedriver_def_path)
+                try:
+                    with ZipFile(zip_file_path, 'r') as zip_ref:
+                        zip_ref.extractall(chromedriver_def_path)
 
-            except Exception as e:
-                print(e)
-                raise SystemExit(1)
+                except Exception as e:
+                    print(e)
+                    raise SystemExit(1)
 
-            if os.path.exists(zip_file_path):
-                os.remove(zip_file_path)
+                if os.path.exists(zip_file_path):
+                    os.remove(zip_file_path)
 
-            exact_path = os.path.join(chromedriver_def_path, "chromedriver-linux64/chromedriver")
+                exact_path = os.path.join(chromedriver_def_path, "chromedriver-linux64/chromedriver")
 
-            try:
-                shutil.copy(exact_path, chromedriver_def_path)
-            except Exception as e:
-                print(e)
-                raise SystemExit(1)
+                try:
+                    shutil.copy(exact_path, chromedriver_def_path)
+                except Exception as e:
+                    print(e)
+                    raise SystemExit(1)
 
-            exact_path = os.path.join(chromedriver_def_path, "chromedriver-linux64")
+                exact_path = os.path.join(chromedriver_def_path, "chromedriver-linux64")
 
-            try:
-                shutil.rmtree(exact_path)
-            except Exception as e:
-                print(e)
-                raise SystemExit(1)
+                try:
+                    shutil.rmtree(exact_path)
+                except Exception as e:
+                    print(e)
+                    raise SystemExit(1)
 
-            # Returning the path of the donwloaded chromedriver latest release
-            return chromedriver_def_path + "/chromedriver"
+                # Returning the path of the donwloaded chromedriver latest release
+                return chromedriver_def_path + "/chromedriver"
+
 
     # Greets the users on CLI
     def greet(self):
@@ -202,4 +225,5 @@ class CLI :
             print("|", end='')
             print(f"{temp2:^90}", end='')
             print("|")
-        print("Total results : ", len(employee_filtered_links))
+
+    def save_mails(self,):
